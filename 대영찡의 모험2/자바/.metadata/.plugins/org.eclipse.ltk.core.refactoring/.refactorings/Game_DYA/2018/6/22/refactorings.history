@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;enemy_golem_idleL&apos; in &apos;gfx.Asset_kyo&apos; to &apos;enemy_kyo_idleL&apos;&#x0D;&#x0A;- Original project: &apos;Game_DYA&apos;&#x0D;&#x0A;- Original element: &apos;gfx.Asset_kyo.enemy_golem_idleL&apos;&#x0D;&#x0A;- Renamed element: &apos;gfx.Asset_kyo.enemy_kyo_idleL&apos;&#x0D;&#x0A;- Update references to refactored element&#x0D;&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;enemy_golem_idleL&apos;" flags="589830" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src&lt;gfx{Asset_kyo.java[Asset_kyo^enemy_golem_idleL" name="enemy_kyo_idleL" references="true" setter="false" stamp="1527942120160" textual="false" version="1.0"/>
+</session>

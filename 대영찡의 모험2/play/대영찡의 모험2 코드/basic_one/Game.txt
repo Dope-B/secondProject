@@ -1,0 +1,147 @@
+package basic_one;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+
+import State.GameState;
+import State.State;
+import gfx.Asset;
+import gfx.Asset_Lasswell;
+import gfx.Asset_NPC;
+import gfx.Asset_arte;
+import gfx.Asset_dark;
+import gfx.Asset_earth;
+import gfx.Asset_effect;
+import gfx.Asset_eve;
+import gfx.Asset_glauca;
+import gfx.Asset_golem;
+import gfx.Asset_heltich;
+import gfx.Asset_kain;
+import gfx.Asset_kyo;
+import gfx.Asset_light;
+import gfx.Asset_portal;
+import gfx.Asset_rock;
+import gfx.Asset_rock_fire;
+import gfx.Asset_rock_ice;
+import gfx.Asset_shadow;
+import gfx.Asset_slime;
+import gfx.Asset_tile;
+import gfx.Asset_tree;
+import gfx.Asset_treeC;
+import gfx.GameCamera;
+import input.KeyManager;
+import window.window;
+
+public class Game implements Runnable {
+	private window window;
+	private int width,height;//틀의 가로, 세로
+	public String title;
+	private Thread thread;
+	private boolean running=false;//게임 실행 여부
+	private BufferStrategy bs;
+	private Graphics g;
+	private State gameState;
+	
+	private KeyManager keyManager;
+	private GameCamera gameCamera;
+	private Handler handler;
+	public Game(String title,int width,int height) {//메인 함수에 쓰였던 생성자
+		this.width=width;
+		this.height=height;
+		this.title=title;
+		keyManager=new KeyManager();//키 입력 클래스
+	}
+	public int getWidth() {return width;}
+	public int getHeight() {return height;}
+	private void init() {// 자료 저장 및 세팅 함수
+		window=new window(title,width,height);
+		window.getFrame().addKeyListener(keyManager);// 키 입력받음
+		Asset_portal.init();// 이미지 저장 받음
+		Asset_tile.init();
+		Asset_heltich.init();
+		Asset_Lasswell.init();
+		Asset_eve.init();
+		Asset.init();
+		Asset_arte.init();
+		Asset_effect.init();
+		Asset_earth.init();
+		Asset_light.init();
+		Asset_slime.init();
+		Asset_golem.init();
+		Asset_glauca.init();
+		Asset_kain.init();
+		Asset_shadow.init();
+		Asset_dark.init();
+		Asset_kyo.init();
+		Asset_tree.init();
+		Asset_treeC.init();
+		Asset_rock.init();
+		Asset_rock_ice.init();
+		Asset_rock_fire.init();
+		Asset_NPC.init();
+		handler=new Handler(this);//변수 조작 전용 클래스
+		gameCamera=new GameCamera(handler,0,0);// 게임 카메라 클래스(출력 화면 관리)
+		gameState=new GameState(handler);// 게임 상태 계산 및 출력 클래스
+		State.setState(gameState);
+	}
+	public GameCamera getGameCamera() {
+		return gameCamera;
+	}
+	private void tick() {// 변수 계산 함수
+		keyManager.tick();// 키를 입력받음
+		if(State.getState()!=null) {// 상태값이 존재한다면 계산 
+			State.getState().tick();
+		}
+	}
+	private void render() {//변수 계산에 따른 출력 함수
+		bs=window.getCanvas().getBufferStrategy();// 버퍼 생성
+		if(bs==null) {
+			window.getCanvas().createBufferStrategy(3);// 버퍼가 없다면 삼중 버퍼 생성
+			return;
+		}
+		g=bs.getDrawGraphics();// 출력 할 그래픽을 받음
+		g.clearRect(0, 0, width, height);//전에 출력됐던 그래픽들 리셋
+		if(State.getState()!=null) {
+			State.getState().render(g);//실제 출력
+		}
+		bs.show();
+		g.dispose();
+	}
+	public void run() {
+		init();// 기본 세팅
+		int fps=60;// 초당 프레임 수
+		double timePerTick=1000000000/fps;//1틱당 소요 시간(시간을 나노 단위로 나눴기 때문에 단위가 크다)
+		double delta=0;//변화량
+		long now;// 현 시간 저장 변수
+		long lastTime=System.nanoTime();// 가장 최근 시간 저장 변수
+		while(running) {//실행중 무한반복
+			now=System.nanoTime();//현 시간 저장
+			delta+=(now-lastTime)/timePerTick;//소요시간 갱신
+			lastTime=now;// 시간 갱신
+			if(delta>=1) {// 틱당 소요시간이 1이 넘으면(경과시간이 틱당 소요시간과 일치 따라서 실행 가능) tick과 render 실행 후  delta 1감소
+			tick();
+			render();
+			delta--;
+			}
+		}
+		stop();// 동작하지 않는다면 종료(running==false)
+	}
+	public KeyManager getKeyManager() {
+		return keyManager;
+	}
+	public synchronized void start() {// 시작 함수
+		if(running) {return;}// 이미 동작 중이라면 넘어간다 
+		running=true;// 아니면 동작중으로 바꾸고 
+		thread =new Thread(this);
+		thread.start();//스레드를 작동시킨다
+		
+	}
+	public synchronized void stop() {
+		if(!running) {return;}// 이미 동작이 멈췄다면 넘어간다
+		running=false;
+		try {
+			thread.join();
+		}catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+}

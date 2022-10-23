@@ -1,0 +1,246 @@
+package Enemy;
+
+
+import java.awt.Rectangle;
+import Creature.Creature;
+import Entities.Entity;
+import basic_one.Handler;
+import gfx.Animation;
+import tiles.Tile;
+
+public abstract class Ene_Creature extends Entity {
+	
+	private boolean isPersive = false;// 몬스터의 플레이어 인식 여부
+	protected boolean ready = false;// 플레이어 공격가능 여부
+	protected boolean LOR = false;// 왼쪽=true 오른쪽=false
+	protected Rectangle range;//플레이어 탐지 범위
+	protected Rectangle attackRange;//공격범위
+	protected Creature target;//플레이어
+	protected double angle=0;//움직임 각도
+	protected boolean isMove = false;//움직임 여부
+	private int moveticker = 0;//미 탐지 시 랜덤 움직임 거리
+	protected boolean M_cooldown = false;//움직임 쿨타임
+	protected boolean A_cooldown = false;//공격 쿨타임
+	protected long lastTime = System.currentTimeMillis();//쿨타임 사용
+	private long timer = 0;//쿨타임
+	protected long A_timer = 0;
+	protected int H_timer=0;
+	protected int H_delay=60;//피격 딜레이
+	private double move_x;// x방향 움직임 변화율
+	private double move_y;// y방향 움직임 변화율
+	private int countMove;// 움직임 횟수
+	protected boolean AC_L=false;//공격 제어 변수
+	protected boolean AC_R=false;//공격 제어 변수
+	public boolean isAttacked=false;//공격여부
+	public boolean isDamaged=false;//부상 여부
+	public boolean Damaged=false;
+	public boolean print_E_HP=true;//체력 출력 여부
+	public int E_HP_ticker=0;//체력 출력 시간
+	public Animation icon;
+	
+	protected boolean collisionWithTile(int x, int y) {
+		return handler.getWorld().getTile(x, y).isSolid();
+	}
+	protected int attackTerm=0;// 플레이어에서부터 떨어져있는 몬스터 움직임 기준점
+	
+	
+
+	public Ene_Creature(Handler handler, float x, float y, int width, int height) {
+		super(handler, x, y, width, height);
+		xMove = 0;
+		yMove = 0;
+		range = new Rectangle(-150, -80, 400, 300);//인식 범위
+		attackRange = new Rectangle(-100, 20, 200, 1);//공격 가능 범위
+		speed = 2;
+		isplayer=false;
+	}
+	public int getHealth() {
+		return health;
+	}
+	public void setHealth(int health) {
+		this.health = health;
+	}
+
+
+	public void AI() {//행동 AI
+		moveC();
+		isDetect();
+		readyTA();
+		}
+	protected void hurtDelay() {//피격 딜레이
+		H_timer++;
+		if(H_timer>=H_delay) {isDamaged=false;H_timer=0;}
+		else {;isDamaged=true;}
+	}
+	
+
+	protected abstract void checkHitBox();
+
+	public void moveX() {//creature 와 동일
+		if (xMove > 0) {
+			int tx = (int) (x + xMove + bounds.x + bounds.width) / Tile.TILEWIDTH;
+			if (!collisionWithTile(tx, (int) (y + bounds.y) / Tile.TILEHEIGHT)
+					&& !collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / Tile.TILEHEIGHT)) {
+				x += xMove;
+			} else {
+				x = tx * Tile.TILEWIDTH - bounds.x - bounds.width - 1;
+			}
+		} else if (xMove < 0) {
+			int tx = (int) (x + xMove + bounds.x) / Tile.TILEWIDTH;
+			if (!collisionWithTile(tx, (int) (y + bounds.y) / Tile.TILEHEIGHT)
+					&& !collisionWithTile(tx, (int) (y + bounds.y + bounds.height) / Tile.TILEHEIGHT)) {
+				x += xMove;
+			} else {
+				x = tx * Tile.TILEWIDTH + Tile.TILEWIDTH - bounds.x + 1;
+			}
+		}
+
+	}
+
+	public void moveY() {//creature 와 동일
+		if (yMove < 0) {
+			int ty = (int) (y + yMove + bounds.y) / Tile.TILEHEIGHT;
+			if (!collisionWithTile((int) (x + bounds.x) / Tile.TILEWIDTH, ty)
+					&& !collisionWithTile((int) (x + bounds.x + bounds.width) / Tile.TILEWIDTH, ty)) {
+				y += yMove;
+			} else {
+				y = ty * Tile.TILEHEIGHT + Tile.TILEHEIGHT - bounds.y;
+			}
+		} else if (yMove > 0) {
+			int ty = (int) (y + yMove + bounds.y + bounds.height) / Tile.TILEHEIGHT;
+			if (!collisionWithTile((int) (x + bounds.x) / Tile.TILEWIDTH, ty)
+					&& !collisionWithTile((int) (x + bounds.x + bounds.width) / Tile.TILEWIDTH, ty)) {
+				y += yMove;
+			} else {
+				y = ty * Tile.TILEHEIGHT + -bounds.y - bounds.height - 1;
+			}
+		}
+
+	}
+
+	public void move() {//creature 와 동일
+		if (isMove) {
+			if (xMove >= 0) {
+				LOR = false;
+			} else {
+				LOR = true;	
+			}
+			if(!checkEntityCollision((float)xMove,0f)) {
+			moveX();}
+			if(!checkEntityCollision(0f,(float)yMove)) {
+			moveY();}
+		}
+		else {xMove=0;yMove=0;}
+	}
+	
+	protected boolean colli(Creature target, Rectangle r) {//r과 충돌판정
+		if ((target.getX()+target.bounds.x>x+r.x+r.width||target.getX()+target.bounds.x+target.bounds.width<x+r.x)||
+				(target.getY()+target.bounds.y>y+r.y+r.height||target.getY()+target.bounds.y+target.bounds.height<y+r.y)) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	protected boolean colli_M(Creature target, Rectangle r) {//이펙트 충돌판정(적 좌표에 독립적)
+		if ((r.x>target.getX()+target.bounds.x+target.bounds.width||r.x+r.width<target.getX()+target.bounds.x)||
+				(r.y>target.getY()+target.bounds.y+target.bounds.height||r.y+r.height<target.getY()+target.bounds.y)) {
+			return false;}
+		else {return true;}	
+	}
+	
+
+	public void isDetect() {//플레이어 탐지
+
+		if (colli(target,range)) {
+			isPersive = true;
+		} else {
+			isPersive = false;
+		}
+	}
+
+	
+	public void readyTA() {//공격 준비 
+		if(ready&&(x+bounds.x+(bounds.width/2))>=(target.getX()+target.bounds.x+(target.bounds.width/2))) {AC_L=true;}
+		else  {if(ready) {AC_R=true;}}
+		if (colli(target,attackRange)) {ready = true;} 
+		else {ready = false;}
+		}
+	public void moveC() {//움직임 알고리즘
+
+		xMove = 0;
+		yMove = 0;
+		if (!isPersive && !ready) {//플레이어를 인지하지 못 했을때
+			if (!M_cooldown) {
+				if (moveticker == 0) {
+					resetMove();//움직임 방향 리셋
+				}
+				isMove = true;
+				xMove = move_x * speed;
+				yMove = move_y * speed;
+				moveticker++;
+			}
+			if (moveticker == countMove) {//일정 시간만큼 움직임
+				M_coolDown(4000);//움직임 쿨타임
+				if (M_cooldown) {
+					isMove = false;
+					xMove = 0;
+					yMove = 0;
+				} else {
+					moveticker = 0;
+				}
+			}
+		} else {
+			if (isPersive && !ready) {//플레이어 감지 시 따라감 
+
+				if((x+bounds.x+(bounds.width/2))>=(target.getX()+target.bounds.x+(target.bounds.width/2))) {
+				angle = Math.atan2(
+						((y + bounds.y + bounds.height / 2))
+								- (target.getY() + target.bounds.y + target.bounds.height / 2),
+						((x + bounds.x + bounds.width / 2)-attackTerm)
+								- ((target.getX() + target.bounds.x + target.bounds.width / 2)));
+				}
+				else {
+					angle = Math.atan2(
+							((y + bounds.y + bounds.height / 2))
+									- (target.getY() + target.bounds.y + target.bounds.height / 2),
+							((x + bounds.x + bounds.width / 2)+attackTerm)
+									- ((target.getX() + target.bounds.x + target.bounds.width / 2)));
+				}
+				isMove = true;
+				xMove = -(float) Math.cos(angle) * speed;
+
+				yMove = -(float) Math.sin(angle) * speed;
+
+			} else {
+				isMove = false;
+				xMove = 0;
+				yMove = 0;
+			}
+		}
+
+	}
+
+	protected void M_coolDown(int speed) {//움직임 쿨타임
+		timer += System.currentTimeMillis() - lastTime;
+		lastTime = System.currentTimeMillis();
+		if (timer > speed) {
+			M_cooldown = false;
+			timer = 0;
+		} else {
+			M_cooldown = true;
+		}
+	}
+
+
+	private void resetMove() {//움직임 방향 리셋
+		move_x = (float) (Math.random() * 4) - 2;
+		move_y = (float) (Math.random() * 4) - 2;
+		countMove = (int) (Math.random() * 30) + 12;
+	}
+
+	protected void A_cooldown(int speed){//공격 쿨타임
+		A_timer++;
+		if(A_timer>=speed) {A_cooldown=false;A_timer=0;}
+		else {A_cooldown=true;}
+		}
+}

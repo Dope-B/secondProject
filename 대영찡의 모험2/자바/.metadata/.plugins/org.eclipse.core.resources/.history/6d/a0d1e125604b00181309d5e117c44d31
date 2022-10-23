@@ -1,0 +1,69 @@
+package gfx;
+import java.awt.image.BufferedImage;
+
+public class Asset {
+	public static BufferedImage[] player_rainS2_idleL;
+	public static BufferedImage[] player_rainS2_idleR;
+	public static BufferedImage[] player_rainS2_left;
+	public static BufferedImage[] player_rainS2_right;
+	public static BufferedImage[] player_rainS2_attack;
+	public static BufferedImage grass_tile;
+	public static BufferedImage rock_tile;
+	private static int rainS2_width=70,rainS2_height=60,rainS2_xGap=10,rainS2_yGap=26;
+	public static void init() {
+		rainS2();
+		tile();
+		
+}
+	private static void rainS2() {
+		rainS2_idleL();
+		rainS2_idleR();
+		rainS2_left();
+		rainS2_right();
+	}
+	private static void tile() {
+		SpriteSheet tile=new SpriteSheet(ImageLoader.loadImage("/textures/tile.png"));
+		grass_tile=tile.crop(398, 778, 48, 55);
+		rock_tile=tile.crop(385, 875, 52, 55);
+	}
+	private static void rainS2_idleL() {
+		player_rainS2_idleL=new BufferedImage[8];
+		SpriteSheet rainS2_idleL = new SpriteSheet(ImageLoader.loadImage("/textures/rainS2/rainS2_idle.png"));
+		player_rainS2_idleL[0]=rainS2_idleL.crop(6,26,70,60);
+		player_rainS2_idleL[1]=rainS2_idleL.crop(96,26,70,60);
+		player_rainS2_idleL[2]=rainS2_idleL.crop(186,26,70,60);
+		player_rainS2_idleL[3]=rainS2_idleL.crop(6,112,70,60);
+		player_rainS2_idleL[4]=rainS2_idleL.crop(96,112,70,60);
+		player_rainS2_idleL[5]=rainS2_idleL.crop(186,112,70,60);
+		player_rainS2_idleL[6]=rainS2_idleL.crop(6,198,70,60);
+		player_rainS2_idleL[7]=rainS2_idleL.crop(96,198,70,60);
+	}
+	private static void rainS2_idleR() {
+		player_rainS2_idleR=new BufferedImage[8];
+		SpriteSheet rainS2_idleR = new SpriteSheet(ImageLoader.loadImage("/textures/rainS2/rainS2_idle2.png"));
+		player_rainS2_idleR[0]=rainS2_idleR.crop(6,26,75,60);
+		player_rainS2_idleR[1]=rainS2_idleR.crop(96,26,75,60);
+		player_rainS2_idleR[2]=rainS2_idleR.crop(186,26,75,60);
+		player_rainS2_idleR[3]=rainS2_idleR.crop(6,112,75,60);
+		player_rainS2_idleR[4]=rainS2_idleR.crop(96,112,75,60);
+		player_rainS2_idleR[5]=rainS2_idleR.crop(186,112,75,60);
+		player_rainS2_idleR[6]=rainS2_idleR.crop(96,198,75,60);
+		player_rainS2_idleR[7]=rainS2_idleR.crop(186,198,75,60);
+	}
+	private static void rainS2_left() {
+		player_rainS2_left=new BufferedImage[4];
+		SpriteSheet rainS2_left = new SpriteSheet(ImageLoader.loadImage("/textures/rainS2/rainS2_left.png"));
+		player_rainS2_left[0]=rainS2_left.crop(5,6,70,50);
+		player_rainS2_left[1]=rainS2_left.crop(85,6,70,50);
+		player_rainS2_left[2]=rainS2_left.crop(160,6,70,50);
+		player_rainS2_left[3]=rainS2_left.crop(5,68,70,50);
+	}
+	private static void rainS2_right() {
+		player_rainS2_right=new BufferedImage[4];
+		SpriteSheet rainS2_right = new SpriteSheet(ImageLoader.loadImage("/textures/rainS2/rainS2_right.png"));
+		player_rainS2_right[0]=rainS2_right.crop(10,6,70,50);
+		player_rainS2_right[1]=rainS2_right.crop(90,6,70,50);
+		player_rainS2_right[2]=rainS2_right.crop(165,6,70,50);
+		player_rainS2_right[3]=rainS2_right.crop(165,68,70,50);
+	}
+}
