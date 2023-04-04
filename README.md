@@ -121,6 +121,7 @@ public void jump() {
 ```
 - 특정 캐릭터는 점프 시 공격이 가능하다.(각 캐릭터는 Creature폴더에 정리)
 - 공격 시 특정 인덱스 번호에 따라 히트박스가 갱신되거나 소리가 출력된다.
+- 몬스터와 플레이어는 피격 시 이팩트가 출력된다. 이는 Entity에 구현되어있고 tick과 render함수가 독립적으로 실행된다.
 - 몬스터는 각각 탐지 범위를 사각형으로 가지고 플레이어가 탐지범위 안으로 들어올 시 플레이어 기준 특정 위치로 이동한다. 만약 몬스터가 플레이어 위치로 이동한다면 몬스터의 공격모션에 따라 어색한 연출이 됨(ex) 공격범위는 넓은데 굳이 가까이서 때리는 몬스터) 
 
 ```C++
@@ -147,3 +148,7 @@ objects.sort(renderSorter); //정렬
 - 최적화가 전혀 안 되어 있어 cpu 점유율이 비정상적으로 높게 나온다. 
 - 코드 재사용률이 아직 낮다.
 - 원인 모를 이유로 게임이 멈추는 경우가 발생한다.
+- 
+#### 참고 영상
+
+[![Video Label](http://img.youtube.com/vi/dEKs-3GhVKQ/0.jpg)](https://www.youtube.com/watch?v=dEKs-3GhVKQ&list=PLah6faXAgguMnTBs3JnEJY0shAc18XYQZ&index=1&ab_channel=CodeNMore)
