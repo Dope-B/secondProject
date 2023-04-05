@@ -148,7 +148,10 @@ objects.sort(renderSorter); //정렬
 - 최적화가 전혀 안 되어 있어 cpu 점유율이 비정상적으로 높게 나온다. 
 - 코드 재사용률이 아직 낮다.
 - 원인 모를 이유로 게임이 멈추는 경우가 발생한다.
-- 
+
+#### 리소스 출처
+https://www.spriters-resource.com/mobile/finalfantasybraveexvius/
+
 #### 참고 영상
 
 [![Video Label](http://img.youtube.com/vi/dEKs-3GhVKQ/0.jpg)](https://www.youtube.com/watch?v=dEKs-3GhVKQ&list=PLah6faXAgguMnTBs3JnEJY0shAc18XYQZ&index=1&ab_channel=CodeNMore)
